@@ -28,23 +28,23 @@ const float c_ZERO = 0.0;
 const float c_ONE = 1.0;
 
 // material color properties, 0:ambient 1:diffuse 2:specular 3:emmisive
-uniform mat4 u_Material_Color_Matrix;
-// light color properties, 0:ambient 1:diffuse 2:specular
-uniform mat3 u_Light_Color_Matrix;
-// light other properties, 0:direction 1:position 2:att_factors
-uniform mat3 u_Light_Other_Matrix;
-// 0:specular exp 1:spot exp 2:spot cutoff angle 
-uniform vec3 u_exp_angle;
+uniform vec4 u_Arr_Material[4];
+// light color properties, 0:ambient 1:diffuse 2:specular 3:direction 4:position 5:att_factors
+uniform vec3 u_Arr_Light[6];
+// light other properties, 0: specular exponent 1: spot exponent 2: spot cutoff angle
+uniform f u_Arr_Exp[3];
+// is direct light or not
 uniform bool u_b_direct_light;
+// is compute dist attenuation
 uniform bool u_b_dist_att;
 // model-view-project matrix to calculate final position
 uniform mat4 u_MvpMatrix;
 // model-view matrix to calculate view position
 uniform mat4 u_MvMatrix;
 // the inversed&transposed model-view matrix to calculate normal
-uniform mat4 u_MvInverseMatrix;
+uniform mat4 u_MvInvertMatrix;
 
-attribute vec4 a_Position; 
+attribute vec3 a_Position; 
 attribute vec3 a_Normal;
 
 // transfer to fragment shader to calculate texture coordinate
@@ -55,22 +55,22 @@ varying vec4 v_Color;
 vec4 computeColor(normal) {
 
     material = Material(
-        vec4(u_Material_Color_Matrix[0]),
-        vec4(u_Material_Color_Matrix[1]),
-        vec4(u_Material_Color_Matrix[2]),
-        vec4(u_Material_Color_Matrix[3]),
-        float(u_exp_angle[0])
+        vec4(u_Arr_Material[0]),
+        vec4(u_Arr_Material[1]),
+        vec4(u_Arr_Material[2]),
+        vec4(u_Arr_Material[3]),
+        float(u_Arr_Exp[0])
     );
 
     light = Light(
-        vec3(u_Light_Color_Matrix[0]),
-        vec3(u_Light_Color_Matrix[1]),
-        vec3(u_Light_Color_Matrix[2]),
-        vec3(u_Light_Other_Matrix[0]),
-        vec3(u_Light_Other_Matrix[1]),
-        vec3(u_Light_Other_Matrix[2]),
-        float(u_exp_angle[1]),
-        float(u_exp_angle[2])
+        vec3(u_Arr_Light[0]),
+        vec3(u_Arr_Light[1]),
+        vec3(u_Arr_Light[2]),
+        vec3(u_Arr_Light[3]),
+        vec3(u_Arr_Light[4]),
+        vec3(u_Arr_Light[5]),
+        float(u_Arr_Exp[1]),
+        float(u_Arr_Exp[2])
     );
 
     vec4 computed_color = vec4(c_ZERO, c_ZERO, c_ZERO, c_ZERO);
@@ -138,7 +138,7 @@ vec4 computeColor(normal) {
 
 void main(void) { 
     gl_Position = u_MvpMatrix * a_Position;
-    v_Normal = normalized(u_MvInverseMatrix * a_Normal);
+    v_Normal = normalized(u_MvInvertMatrix * a_Normal);
     v_Color = computeColor(v_Normal);
      
 }
