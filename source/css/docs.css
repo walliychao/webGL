@@ -102,9 +102,6 @@ body::-webkit-scrollbar-track-piece:horizontal {} body::-webkit-scrollbar-corner
 .hide {
     display: none !important;
 }
-html {
-    height: 100%;
-}
 body {
     display: block;
     position: relative;

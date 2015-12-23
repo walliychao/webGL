@@ -22,7 +22,7 @@ module.exports = {
         loaders: [
         {
             test: /\.(js|jsx)$/,
-            loader: 'react-hot!babel-loader'
+            loader: 'babel-loader'
         }, { 
             test: /\.(glsl|vs|fs)$/, loader: 'shader' 
         }, { 

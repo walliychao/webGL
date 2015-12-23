@@ -42,23 +42,15 @@ var initAttributes = function(attr, FSIZE) {
         console.log('fail to get location of' + attr.name);
         return;
     }
-    gl.vertexAttribPointer(a_Loc, attr.size, gl.FLOAT, false, FSIZE * attr.strip, attr.offset);
+    gl.vertexAttribPointer(a_Loc, attr.size, gl.FLOAT, false, FSIZE * attr.strip, FSIZE * attr.offset);
     gl.enableVertexAttribArray(a_Loc);
 };
 
 var initUniforms = function(uni) {
-    if (!uni.location) {
-        var u_Loc = gl.getUniformLocation(gl.program, uni.name);
-        if (u_Loc < 0) {
-            console.log('fail to get location of u_MvpMatrix');
-            return;
-        }
-        
-        // save uniform location to update value
-        resources[gl.rName].uniforms[uni.name].location = u_Loc;
-    }
-    else {
-
+    var u_Loc = gl.getUniformLocation(gl.program, uni.name);
+    if (u_Loc < 0) {
+        console.log('fail to get location of u_MvpMatrix');
+        return;
     }
     if (uni.value) {
         try {
@@ -76,7 +68,20 @@ var initUniforms = function(uni) {
                 gl.uniformVec3fv(u_Loc, false, uni.value);
                 break;
                 case 'f':
-                gl.uniform1f(u_Loc, false, uni.value);
+                if (uni.value.length) {
+                    gl.uniform1fv(u_Loc, false, uni.value);
+                }
+                else {
+                    gl.uniform1f(u_Loc, false, uni.value);
+                }
+                break;
+                case 'b':
+                if (uni.value.length) {
+                    gl.uniform1iv(u_Loc, false, uni.value);
+                }
+                else {
+                    gl.uniform1i(u_Loc, false, uni.value);
+                }
                 break;
             }
         }
@@ -86,23 +91,18 @@ var initUniforms = function(uni) {
 
 var updateUniforms = function(uniData) {
     var l = resources[gl.rName].uniforms.length;
-    if (uniData.length != l) {
-        console.log('unMatched uniforms, can not update.');
-        return;
-    }
-    else {
-        var temData;
-        for (var i = 0; i < uniData.length; i++) {
-            for (var j = 0; j < l; j++) {
-                temData = resources[gl.rName].uniforms[j];
-                if (tempData.name === uniData[i].name) {
-                    tempData.value = uniData[i].value;
-                    initUniforms(tempData);
-                    break;
-                }
+    var tempData;
+    for (var i = 0; i < uniData.length; i++) {
+        for (var j = 0; j < l; j++) {
+            tempData = resources[gl.rName].uniforms[j];
+            if (typeof tempData !== 'undefined' && tempData.name === uniData[i].name && tempData.value !== uniData[i].value) {
+                tempData.value = uniData[i].value;
+                initUniforms(tempData);
+                break;
             }
         }
     }
+
 };
 
 var initVertexBuffers = function() {
@@ -201,17 +201,18 @@ module.exports = {
             // clear color
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            return true;
         }
         else {
             console.log('fail to initialize gl');
+            return;
         }
     },
 
     draw: function(uniData) {
-        if (updateUniforms(uniData)) {
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            gl.drawElements(gl.TRIANGLES, gl.n, gl.UNSIGNED_BYTE, 0);
-        }
-        
+        updateUniforms(uniData);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.drawElements(gl.TRIANGLES, gl.n, gl.UNSIGNED_BYTE, 0);        
     }
 }
